@@ -185,7 +185,12 @@ class DashboardAnalytics:
                 x="Requirement_Index",
                 y="Test_Type",
                 z="Coverage_Intensity",
-                title="PRD Requirements vs. Test Case Type Coverage",
+                title="Requirements vs Scenarios Coverage",
+                labels={
+                    "Requirement_Index": "Requirement ID",
+                    "Test_Type": "Test Scenario Type",
+                    "Coverage_Intensity": "Coverage Depth"
+                },
                 color_continuous_scale="Viridis",
                 histfunc="sum"
             )

@@ -4,7 +4,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    # LLM Settings — primary model tried first, falls back to FALLBACK
+    # ── Cloud LLM (Fastest) ──────────────────────────
+    GROQ_API_KEY       = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL         = os.getenv("GROQ_MODEL", "llama3-8b-8192")
+
+    # ── Local LLM Settings (Ollama) ──────────────────
     PRIMARY_LLM_MODEL  = os.getenv("PRIMARY_LLM_MODEL",  "llama3:8b")
     FALLBACK_LLM_MODEL = os.getenv("FALLBACK_LLM_MODEL", "gemma3:4b")
     # Legacy alias used by qa_planner / qa_chatbot

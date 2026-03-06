@@ -97,7 +97,7 @@ class ScenarioGraph:
                     thickness=15,
                     title='Node Connections',
                     xanchor='left',
-                    titleside='right'
+                    title_side='right'
                 ),
                 line_width=2))
 

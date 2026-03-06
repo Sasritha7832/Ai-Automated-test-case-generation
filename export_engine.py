@@ -150,7 +150,13 @@ def to_excel_qa_template(
     current_row = 1
     NUM_COLS = 8
 
-    for idx, raw_tc in enumerate(test_cases):
+    # Sort test cases by priority before exporting
+    sorted_tcs = sorted(
+        test_cases, 
+        key=lambda x: str(x.get("priority", "P3") if isinstance(x, dict) else "P3")
+    )
+
+    for idx, raw_tc in enumerate(sorted_tcs):
         tc = _normalize(raw_tc)
         steps = tc["test_steps"]
         priority = tc["priority"]
@@ -361,7 +367,14 @@ def to_standard_csv(test_cases: List[Dict[str, Any]]) -> bytes:
     ]
 
     rows = []
-    for raw_tc in test_cases:
+    
+    # Sort test cases by priority before exporting
+    sorted_tcs = sorted(
+        test_cases, 
+        key=lambda x: str(x.get("priority", "P3") if isinstance(x, dict) else "P3")
+    )
+
+    for raw_tc in sorted_tcs:
         tc = _normalize(raw_tc)
         steps = tc["test_steps"]
         steps_strs = [

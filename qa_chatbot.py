@@ -179,8 +179,10 @@ class QAChatbot:
                 role = "User" if msg.get("role") == "user" else "Assistant"
                 history_block += f"{role}: {msg.get('content','')}\n"
 
-        prompt = f"""You are an AI QA automation assistant. Answer based ONLY on the context provided below.
-If the context does not contain enough information, say so clearly. Do not hallucinate.
+        prompt = f"""You are an expert AI QA automation assistant. 
+1. If the user asks about the PRD, the features, or the generated test cases, answer based primarily on the context provided below.
+2. If the user asks a general QA, testing, or software engineering question (e.g. "what is unit testing"), answer authoritatively using your general expert knowledge.
+3. If the context doesn't have the answer to a PRD-specific question, clearly state that, but still offer general QA advice if relevant.
 
 {context_block}
 

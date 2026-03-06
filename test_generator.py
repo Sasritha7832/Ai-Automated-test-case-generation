@@ -145,6 +145,34 @@ class TestGenerator:
             logger.error(f"Ollama call failed: {e}")
             raise
 
+    # ── Groq API call ────────────────────────────────────────────────────────
+
+    def _call_groq(self, prompt: str) -> str:
+        """Call Groq API (OpenAI compatibility) for ultra-fast cloud generation."""
+        headers = {
+            "Authorization": f"Bearer {Config.GROQ_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": Config.GROQ_MODEL,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.25,
+            "max_completion_tokens": 4096,
+            "top_p": 0.9,
+        }
+        try:
+            resp = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=REQUEST_TIMEOUT
+            )
+            resp.raise_for_status()
+            return resp.json()["choices"][0]["message"]["content"]
+        except Exception as e:
+            logger.error(f"Groq call failed: {e}")
+            raise RuntimeError(f"Groq API Error: {e}")
+
     # ── JSON extraction ──────────────────────────────────────────────────────
 
     def _extract_json(self, raw: str) -> List[Dict]:
@@ -269,6 +297,7 @@ Start your response immediately with '['. No other text."""
         feature_name: str,
         context: str,
         requirements: List[Dict] = None,
+        progress_callback=None,
     ) -> List[Dict[str, Any]]:
         """
         Generate test cases for a feature.
@@ -302,11 +331,20 @@ Start your response immediately with '['. No other text."""
             batch_num = batch_start // BATCH_SIZE + 1
             total_batches = (len(requirements) + BATCH_SIZE - 1) // BATCH_SIZE
 
-            logger.info(f"Batch {batch_num}/{total_batches}: {len(batch)} requirements...")
+            msg = f"Batch {batch_num}/{total_batches}: processing {len(batch)} requirements..."
+            logger.info(msg)
+            if progress_callback:
+                progress_callback(msg)
 
             try:
                 prompt = self._build_prompt(batch, feature_name, context)
-                raw = self._call_ollama(prompt)
+                
+                # Route to Groq if API key exists, else fallback to Ollama
+                if Config.GROQ_API_KEY:
+                    raw = self._call_groq(prompt)
+                else:
+                    raw = self._call_ollama(prompt)
+                    
                 parsed = self._extract_json(raw)
 
                 if parsed:

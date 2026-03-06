@@ -17,15 +17,11 @@ from qa_planner import QAPlanner
 from bug_simulator import BugSimulator
 from autonomous_qa_runner import AutonomousQARunner
 from impact_analyzer import ImpactAnalyzer
-from script_generator import ScriptGenerator
-from test_data_generator import TestDataGenerator
 from scenario_graph import ScenarioGraph
 from config import Config
 from logger import get_logger
 import export_engine
 from qa_chatbot import QAChatbot
-from bug_report_generator import BugReportGenerator
-from cicd_generator import CICDGenerator
 
 logger = get_logger(__name__)
 
@@ -218,12 +214,8 @@ def load_modules():
         "qa_planner": QAPlanner(),
         "bug_sim": BugSimulator(),
         "impact": ImpactAnalyzer(),
-        "scripts": ScriptGenerator(),
-        "test_data": TestDataGenerator(),
         "graph": ScenarioGraph(),
         "chatbot": QAChatbot(),
-        "bug_report": BugReportGenerator(),
-        "cicd": CICDGenerator(),
     }
 
 modules = load_modules()
@@ -287,8 +279,23 @@ if navigation == "🔬 AI QA Analysis":
             progress_bar = st.progress(10)
 
             try:
-                with st.spinner("🔄 **AI QA Pipeline running** — LLM is generating test cases. This takes 2–5 min with a local model. Do **not** click Run again."):
-                    report = modules["runner"].run_full_pipeline(uploaded_pdf, feature_name)
+                # We use a placeholder so we can update the spinner text live
+                spinner_ph = st.empty()
+                
+                def _live_update(msg):
+                    spinner_ph.info(f"🔄 **AI QA Pipeline running** — {msg}")
+                
+                _live_update("Starting LLM generation (this takes 2–5 min)...")
+                
+                report = modules["runner"].run_full_pipeline(
+                    uploaded_pdf, 
+                    feature_name,
+                    progress_callback=_live_update
+                )
+                
+                # Clear spinner when done
+                spinner_ph.empty()
+                
             except Exception as _ex:
                 st.error(f"❌ Pipeline error: {_ex}")
                 report = {"status": "failed", "errors": [str(_ex)]}
@@ -450,6 +457,12 @@ if navigation == "🔬 AI QA Analysis":
         st.markdown("---")
         st.subheader("📋 Generated Test Suite")
 
+        # Sort descending priority (P0 first, then P1, P2, P3)
+        st.session_state.test_cases = sorted(
+            st.session_state.test_cases,
+            key=lambda x: str(x.get("priority", "P3"))
+        )
+        
         # ── Build flat DataFrame for CSV export (unchanged from before) ────────
         _COLS = ["test_case_id","module","test_type","scenario",
                  "preconditions","test_steps","test_data",
@@ -501,8 +514,8 @@ if navigation == "🔬 AI QA Analysis":
 
         # ── Priority badge helper ─────────────────────────────────────────────
         def _priority_badge(p: str) -> str:
-            cls = {"P0": "badge-p0", "P1": "badge-p1", "P2": "badge-p2"}.get(p, "badge-p3")
-            return f'<span class="badge-pri {cls}">{p}</span>'
+            bg = {"P0": "#ff4b4b", "P1": "#ffa333", "P2": "#3399ff"}.get(p, "#8c8c8c")
+            return f'<span class="badge-pri" style="background-color: {bg} !important; color: white !important;">{p}</span>'
 
         def _severity(test_type: str, priority: str) -> str:
             sev_map = {
@@ -1012,7 +1025,7 @@ elif navigation == "📊 Analytics Dashboard":
             if fig_pr:
                 st.plotly_chart(fig_pr, use_container_width=True)
 
-        st.subheader("4. Coverage Heatmap")
+        st.subheader("4. Coverage Heat Map")
         ch1, ch2 = st.columns(2)
         with ch1:
             # Scenario Graph (first 10 TCs to avoid crowding)
@@ -1026,7 +1039,7 @@ elif navigation == "📊 Analytics Dashboard":
             except Exception as e:
                 st.info(f"Scenario graph unavailable: {e}")
         with ch2:
-            st.markdown("**PRD vs Test Coverage Heatmap**")
+            st.markdown("**PRD vs Test Coverage Heat Map**")
             rtm_data = []
             try:
                 cov_res = modules["coverage"].analyze_coverage(

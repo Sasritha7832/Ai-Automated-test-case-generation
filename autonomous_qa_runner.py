@@ -56,7 +56,7 @@ class AutonomousQARunner:
         self.qa_intel = QAIntelligenceEngine()
         logger.info("AutonomousQARunner initialized (deterministic pipeline).")
 
-    def run_full_pipeline(self, pdf_file: Any, feature_name: str) -> Dict[str, Any]:
+    def run_full_pipeline(self, pdf_file: Any, feature_name: str, progress_callback=None) -> Dict[str, Any]:
         """Run the entire pipeline and return a consolidated QA report."""
         report = {
             "status": "success",
@@ -111,6 +111,7 @@ class AutonomousQARunner:
                 feature_name=feature_name,
                 context=context,
                 requirements=requirements if requirements else None,
+                progress_callback=progress_callback
             )
 
             report["timing"]["test_generation"] = round(time.time() - t0, 2)
