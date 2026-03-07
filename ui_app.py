@@ -232,7 +232,6 @@ with st.sidebar:
             "📊 Analytics Dashboard",
             "🔗 Requirement Traceability",
             "🤖 QA Assistant",
-            "🏗️ System Architecture",
         ]
     )
     st.markdown("---")
@@ -1060,76 +1059,6 @@ elif navigation == "📊 Analytics Dashboard":
                 st.info("Upload a PRD and run the pipeline to see the coverage heatmap.")
     else:
         st.info("Run the AI QA Analysis pipeline to populate the analytics dashboard.")
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# PAGE 4 — SYSTEM ARCHITECTURE
-# ═══════════════════════════════════════════════════════════════════════════════
-elif navigation == "🏗️ System Architecture":
-    st.header("🏗️ System Architecture Pipeline")
-    st.markdown("""
-    This intelligent QA platform dynamically extracts requirements, reasons on them,
-    generates structured test suites, scores risks, and prevents duplicate work.
-
-    ```mermaid
-    graph TD
-        subgraph GenAI Pipeline
-            A[PRD Document PDF] --> B(Document Processor Chunking)
-            B --> C(HuggingFace Embeddings)
-            C --> D[(FAISS Vector DB)]
-            D --> E[RAG Context Retrieval]
-            E --> F[QA Planner Strategy]
-            F --> G[CrewAI Multi-Agent Generator]
-        end
-
-        subgraph Optimization Pipeline
-            G --> H[Deduplication Engine]
-            H --> I[ML Priority Predictor]
-            B --> J(NLP Complexity Analyzer)
-            J --> I
-            C --> K[PRD Coverage Analyzer]
-        end
-
-        subgraph Intelligence Modules
-            L[Upload UI Screenshot] --> M[OpenCV Element Detector]
-            M --> N[UI Test Cases]
-            O[Requirements] --> P[Random Forest Bug Risk]
-            P --> Q[Bug Scenario Simulator]
-        end
-
-        subgraph Dashboard
-            I --> R((Streamlit UI))
-            K --> R
-            N --> R
-            Q --> R
-            R --> S[QA Intelligence Score]
-            R --> T[Pandas DataFrame Table]
-            R --> U[CSV Export]
-        end
-    ```
-    """)
-
-    st.markdown("---")
-    st.subheader("Module Inventory")
-    modules_table = {
-        "Module": [
-            "document_processor.py", "vector_store.py", "rag_pipeline.py",
-            "qa_planner.py", "agents.py", "crew_setup.py",
-            "deduplication_engine.py", "priority_model.py", "coverage_analyzer.py",
-            "complexity_analyzer.py", "ml_model.py", "bug_simulator.py",
-            "cv_detector.py", "qa_chatbot.py", "analytics.py",
-            "autonomous_qa_runner.py", "qa_intelligence_engine.py"
-        ],
-        "Role": [
-            "PDF → Text Chunks", "FAISS Vector DB Management", "End-to-End RAG Pipeline",
-            "Testing Strategy Planning", "CrewAI Agent Definitions", "Crew Execution Entry Point",
-            "Semantic Deduplication", "ML Priority Prediction", "PRD Coverage Analysis",
-            "NLP Complexity Scoring", "Random Forest Bug Risk", "Bug Scenario Simulation",
-            "OpenCV UI Testing", "RAG-grounded QA Chatbot", "Plotly Analytics",
-            "Full Pipeline Orchestrator", "QA Intelligence Scoring"
-        ],
-        "Status": ["✅"] * 17
-    }
-    st.dataframe(pd.DataFrame(modules_table), use_container_width=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PAGE 5 — QA ASSISTANT CHATBOT
