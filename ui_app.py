@@ -808,7 +808,14 @@ if navigation == "🔬 AI QA Analysis":
             if st.button(f"Generate {fw} Test Scripts", key="gen_scripts_btn"):
                 with st.spinner("Generating code skeletons..."):
                     try:
-                        code = modules["scripts"].generate_script(st.session_state.test_cases, fw.lower())
+                        code = f"import {fw.lower()}\n\n"
+                        for i, tc in enumerate(st.session_state.test_cases[:10]): # Top 10 scripts
+                            safe_name = "".join([c if c.isalnum() else "_" for c in tc.get("scenario", f"test_{i}")]).lower()
+                            if not safe_name: safe_name = f"test_{i}"
+                            code += f"def test_{safe_name}():\n"
+                            code += f"    # Priority: {tc.get('priority', 'P3')} | Type: {tc.get('test_type', 'Functional')}\n"
+                            code += f"    # Expected: {tc.get('expected_result', 'Success')}\n"
+                            code += f"    assert True  # TODO: Implement actual test steps\n\n"
                         st.code(code, language="python")
                     except Exception as e:
                         st.error(f"Script generation failed: {e}")
@@ -822,9 +829,22 @@ if navigation == "🔬 AI QA Analysis":
             if st.button("⚙️ Generate GitHub Actions Workflow", key="gen_cicd_btn"):
                 with st.spinner("Generating GitHub Actions YAML..."):
                     try:
-                        yaml_content = modules["cicd"].generate_github_actions(
-                            st.session_state.test_cases, cicd_fw
-                        )
+                        yaml_content = f"""name: QA Automation Pipeline
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install {cicd_fw}
+      - name: Run test suite
+        run: {cicd_fw}
+"""
                         st.code(yaml_content, language="yaml")
                         st.download_button(
                             label="⬇️ Download qa.yml",
